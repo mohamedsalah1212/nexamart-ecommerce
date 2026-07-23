@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  icon        String?
+  image       String?
+  description String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id              String       @id @default(uuid())
+  name            String
+  slug            String       @unique
+  shortDescription String?
+  description     String?
+  richDescription String?
+  specifications  String?
+  features        String
+  brand           String?
+  sku             String       @unique
+  categoryId      String
+  category        Category     @relation(fields: [categoryId], references: [id])
+  price           Float
+  discountPrice   Float?
+  deliveryTime    String       @default("2-5 Business Days")
+  availability    Boolean      @default(true)
+  isFeatured      Boolean      @default(false)
+  isBestSeller    Boolean      @default(false)
+  isTrending      Boolean      @default(false)
+  isFlashDeal     Boolean      @default(false)
+  flashDealEnd    DateTime?
+  images          Media[]
+  variants        ProductVariant[]
+  reviews         Review[]
+  wishlists       Wishlist[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  type      String   @default("image")
+  isFeatured Boolean @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Banner {
+  id            String   @id @default(uuid())
+  title         String?
+  subtitle      String?
+  link          String?
+  desktopImage  String
+  mobileImage   String?
+  isActive      Boolean  @default(true)
+  order         Int      @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  phone     String
+  city      String
+  address   String
+  notes     String?
+  email     String?   @unique
+  password  String?
+  orders    Order[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  orderId    String      @unique
+  customerId String
+  customer   Customer    @relation(fields: [customerId], references: [id])
+  items      OrderItem[]
+  total      Float
+  status     String      @default("pending")
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model ProductVariant {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  colorName   String?
+  colorHex    String?
+  sizeName    String?
+  price       Float?
+  imageUrl    String?
+  sku         String?
+  stock       Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id            String  @id @default(uuid())
+  orderId       String
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product @relation(fields: [productId], references: [id])
+  name          String
+  price         Float
+  quantity      Int
+  selectedColor String?
+  selectedSize  String?
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerName String
+  rating    Int
+  comment   String?
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  sessionId String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, productId])
+}
+
+model CartItem {
+  id            String   @id @default(uuid())
+  sessionId     String
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  quantity      Int      @default(1)
+  selectedColor String?
+  selectedSize  String?
+  createdAt     DateTime @default(now())
+
+  @@unique([sessionId, productId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  type      String   @default("order")
+  isRead    Boolean  @default(false)
+  orderId   String?
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model HomepageSection {
+  id        String   @id @default(uuid())
+  section   String   @unique
+  enabled   Boolean  @default(true)
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
