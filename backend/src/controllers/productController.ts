@@ -327,12 +327,13 @@ export const uploadProductMedia = async (req: Request, res: Response) => {
 
     const media = await Promise.all(
       files.map((file, index) => {
+        const uploadedFile = file as any;
         const fileUrl =
-          file.path ||
-          (file as any).location ||
-          (file as any).secure_url ||
-          (file as any).url ||
-          `/uploads/${file.filename}`;
+          uploadedFile.secure_url ||
+          uploadedFile.url ||
+          uploadedFile.location ||
+          uploadedFile.path ||
+          `/uploads/${uploadedFile.filename}`;
         return prisma.media.create({
           data: {
             productId,
