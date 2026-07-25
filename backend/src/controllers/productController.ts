@@ -317,10 +317,19 @@ export const uploadProductMedia = async (req: Request, res: Response) => {
     const files = req.files as any[];
 
     if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
+      return res.status(400).json({ error: "No files uploaded" });
     }
 
-    console.log("Uploaded file:", files[0]);
+    console.log("Files:", files);
+
+    // تأكد إن المنتج موجود
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
 
     const maxOrder = await prisma.media.aggregate({
       where: { productId },
@@ -328,23 +337,38 @@ export const uploadProductMedia = async (req: Request, res: Response) => {
     });
 
     const media = await Promise.all(
-      files.map((file: any, index: number) =>
-        prisma.media.create({
+      files.map((file: any, index: number) => {
+        const imageUrl =
+          file.path ||
+          file.secure_url ||
+          file.url ||
+          (file.filename ? `/uploads/${file.filename}` : null);
+
+        console.log("Image URL:", imageUrl);
+
+        return prisma.media.create({
           data: {
             productId,
-            url: file.path || file.secure_url || file.filename,
+            url: imageUrl!,
             type: file.mimetype.startsWith("video") ? "video" : "image",
-            isFeatured: index === 0 && (maxOrder._max.order ?? -1) === -1,
-            order: (maxOrder._max.order ?? -1) + 1 + index,
+            isFeatured:
+              index === 0 && (maxOrder._max.order ?? -1) === -1,
+            order: (maxOrder._max.order ?? -1) + index + 1,
           },
-        })
-      )
+        });
+      })
     );
 
-    res.status(201).json(media);
-  } catch (error) {
-    console.error("Upload media error:", error);
-    res.status(500).json({ error: "Failed to upload media" });
+    return res.status(201).json(media);
+  } catch (err: any) {
+    console.error("UPLOAD ERROR");
+    console.error(err);
+    console.error(err?.message);
+    console.error(err?.code);
+
+    return res.status(500).json({
+      error: err?.message || "Upload failed",
+    });
   }
 };
 
