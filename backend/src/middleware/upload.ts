@@ -9,6 +9,9 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 let storage: multer.StorageEngine;
 
 if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
+  console.log("Cloud:", config.cloudinary.cloudName);
+console.log("Key:", config.cloudinary.apiKey);
+console.log("Secret exists:", !!config.cloudinary.apiSecret);
   cloudinary.config({
     cloud_name: config.cloudinary.cloudName,
     api_key: config.cloudinary.apiKey,
