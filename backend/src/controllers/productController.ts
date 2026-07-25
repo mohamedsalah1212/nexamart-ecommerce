@@ -112,74 +112,217 @@ export const getProduct = async (req: Request, res: Response) => {
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + uuidv4().slice(0, 8);
-    const imageUrl = data.imageUrl || data.mainImage;
+
+    const slug =
+      data.slug ||
+      data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') +
+        '-' +
+        uuidv4().slice(0, 8);
+
 
     const product = await prisma.product.create({
       data: {
         name: data.name,
         slug,
+
         shortDescription: data.shortDescription,
         description: data.description,
         richDescription: data.richDescription,
         specifications: data.specifications,
-        features: data.features ? (Array.isArray(data.features) ? JSON.stringify(data.features) : data.features) : '[]',
+
+        features: data.features
+          ? Array.isArray(data.features)
+            ? JSON.stringify(data.features)
+            : data.features
+          : '[]',
+
         brand: data.brand,
-        sku: data.sku || `SKU-${uuidv4().slice(0, 8).toUpperCase()}`,
+
+        sku:
+          data.sku ||
+          `SKU-${uuidv4().slice(0, 8).toUpperCase()}`,
+
         categoryId: data.categoryId,
+
         price: parseFloat(data.price),
-        discountPrice: data.discountPrice ? parseFloat(data.discountPrice) : null,
-        deliveryTime: data.deliveryTime || '2-5 Business Days',
+
+        discountPrice: data.discountPrice
+          ? parseFloat(data.discountPrice)
+          : null,
+
+        deliveryTime:
+          data.deliveryTime || '2-5 Business Days',
+
         availability: data.availability !== false,
+
         isFeatured: data.isFeatured === true,
         isBestSeller: data.isBestSeller === true,
         isTrending: data.isTrending === true,
         isFlashDeal: data.isFlashDeal === true,
-        flashDealEnd: data.flashDealEnd ? new Date(data.flashDealEnd) : null,
+
+        flashDealEnd: data.flashDealEnd
+          ? new Date(data.flashDealEnd)
+          : null,
       },
-      include: { images: true, variants: true, category: true },
+
+      include: {
+        images: true,
+        variants: true,
+        category: true,
+      },
     });
 
-    const imageUrls: string[] = Array.isArray(data.imageUrls)
-      ? data.imageUrls
-      : (data.imageUrl || data.mainImage) ? [data.imageUrl || data.mainImage] : [];
 
+    // ============================
+    // Handle Images
+    // ============================
+
+    let imageUrls: string[] = [];
+
+
+    // لو جاي URL من الفرونت
+    if (Array.isArray(data.imageUrls)) {
+
+      imageUrls = data.imageUrls;
+
+    } else if (data.imageUrl || data.mainImage) {
+
+      imageUrls = [
+        data.imageUrl || data.mainImage
+      ];
+
+    }
+
+
+    // لو الصور مرفوعة كـ files
+    if (
+      req.files &&
+      Array.isArray(req.files)
+    ) {
+
+      const uploadedFiles = req.files
+        .map((file: any) =>
+          file.path ||
+          file.secure_url ||
+          file.url
+        )
+        .filter(Boolean);
+
+
+      imageUrls.push(...uploadedFiles);
+    }
+
+
+
+    // حفظ الصور في Media table
     if (imageUrls.length > 0) {
+
       await prisma.media.createMany({
-        data: imageUrls.map((url, i) => ({
+
+        data: imageUrls.map((url, index) => ({
+
           productId: product.id,
+
           url,
-          isFeatured: i === 0,
-          order: i,
+
+          isFeatured: index === 0,
+
+          order: index,
+
+          type: 'image',
+
         })),
+
       });
+
     }
 
-    if (Array.isArray(data.variants) && data.variants.length > 0) {
+
+
+    // Variants
+    if (
+      Array.isArray(data.variants) &&
+      data.variants.length > 0
+    ) {
+
       await prisma.productVariant.createMany({
+
         data: data.variants.map((v: any) => ({
+
           productId: product.id,
+
           colorName: v.colorName || null,
+
           colorHex: v.colorHex || null,
+
           sizeName: v.sizeName || null,
-          price: v.price ? parseFloat(v.price) : null,
+
+          price: v.price
+            ? parseFloat(v.price)
+            : null,
+
           imageUrl: v.imageUrl || null,
+
         })),
+
       });
+
     }
+
+
 
     const updated = await prisma.product.findUnique({
-      where: { id: product.id },
-      include: { images: true, variants: true, category: true },
+
+      where: {
+        id: product.id,
+      },
+
+      include: {
+
+        images: true,
+
+        variants: true,
+
+        category: true,
+
+      },
+
     });
 
+
+
     res.status(201).json(updated);
+
+
   } catch (error: any) {
-    if (error.code === 'P2002') return res.status(400).json({ error: 'Product with this slug or SKU already exists' });
-    res.status(500).json({ error: 'Failed to create product' });
+
+    console.error(error);
+
+
+    if (error.code === 'P2002') {
+
+      return res.status(400).json({
+
+        error:
+          'Product with this slug or SKU already exists',
+
+      });
+
+    }
+
+
+    res.status(500).json({
+
+      error:
+        'Failed to create product',
+
+    });
+
   }
 };
-
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
