@@ -314,11 +314,13 @@ export const duplicateProduct = async (req: Request, res: Response) => {
 export const uploadProductMedia = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as any[];
 
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
+
+    console.log("Uploaded file:", files[0]);
 
     const maxOrder = await prisma.media.aggregate({
       where: { productId },
@@ -326,12 +328,12 @@ export const uploadProductMedia = async (req: Request, res: Response) => {
     });
 
     const media = await Promise.all(
-      files.map((file, index) =>
+      files.map((file: any, index: number) =>
         prisma.media.create({
           data: {
             productId,
-            url: `/uploads/${file.filename}`,
-            type: file.mimetype.startsWith('video') ? 'video' : 'image',
+            url: file.path || file.secure_url || file.filename,
+            type: file.mimetype.startsWith("video") ? "video" : "image",
             isFeatured: index === 0 && (maxOrder._max.order ?? -1) === -1,
             order: (maxOrder._max.order ?? -1) + 1 + index,
           },
@@ -341,7 +343,8 @@ export const uploadProductMedia = async (req: Request, res: Response) => {
 
     res.status(201).json(media);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to upload media' });
+    console.error("Upload media error:", error);
+    res.status(500).json({ error: "Failed to upload media" });
   }
 };
 
