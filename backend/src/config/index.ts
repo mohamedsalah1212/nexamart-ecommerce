@@ -12,4 +12,9 @@ export const config = {
   database: {
     url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/ecommerce',
   },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 };
