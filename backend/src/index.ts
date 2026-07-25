@@ -51,7 +51,12 @@ app.use('/api/settings', settingsRoutes);
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  const url = `${baseUrl}/uploads/${req.file.filename}`;
+  const url =
+    req.file.path ||
+    req.file.location ||
+    req.file.secure_url ||
+    req.file.url ||
+    `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url });
 });
 
