@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Heart, ShoppingBag, Package, Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Package, Phone, Mail, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
 import { useSettings } from '@/components/SettingsProvider';
 
 export function Footer() {
