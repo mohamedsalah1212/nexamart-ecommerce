@@ -51,18 +51,15 @@ app.use('/api/settings', settingsRoutes);
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const file = req.file as any;
-  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  const url =
-    file.secure_url ||
-    file.url ||
-    file.location ||
-    file.path ||
-    (file.filename ? `${baseUrl}/uploads/${file.filename}` : null);
-
-  if (!url) {
-    return res.status(500).json({ error: 'Unable to determine uploaded file URL' });
+  
+  if (file.path && file.path.startsWith('http')) {
+    return res.json({ url: file.path });
+  } else if (file.secure_url || file.url || file.location) {
+    return res.json({ url: file.secure_url || file.url || file.location });
   }
 
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  const url = `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url });
 });
 
