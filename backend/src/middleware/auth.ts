@@ -16,6 +16,11 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as { id: string; email: string; role: string };
+    
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Access forbidden. Admins only.' });
+    }
+
     req.admin = decoded;
     next();
   } catch {
