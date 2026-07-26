@@ -69,7 +69,7 @@ export function Navbar() {
       <div className="hidden lg:block bg-navy-900 text-white text-xs">
         <div className="container-custom flex items-center justify-between h-9">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1"><Phone size={12} /> {settings.contact_phone || '+20 100 000 0000'}</span>
+            <span className="flex items-center gap-1"><Phone size={12} /> {settings.contact_phone || '01026134030'}</span>
             <span className="flex items-center gap-1"><MapPin size={12} /> {settings.address || 'Cairo, Egypt'}</span>
           </div>
           <div className="flex items-center gap-4">
