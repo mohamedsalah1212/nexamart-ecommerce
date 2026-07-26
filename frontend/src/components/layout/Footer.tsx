@@ -1,9 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Heart, ShoppingBag, Package, Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { useSettings } from '@/components/SettingsProvider';
 
 export function Footer() {
+  const pathname = usePathname();
+  const { settings } = useSettings();
+
+  if (pathname.startsWith('/admin')) return null;
+
   return (
     <footer className="bg-navy-900 text-white">
       {/* Newsletter */}
@@ -32,27 +39,34 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <span className="text-xl font-bold">NexaMart</span>
+              {settings.site_logo ? (
+                <img src={settings.site_logo} alt={settings.site_name || 'NexaMart'} className="h-8 object-contain filter brightness-0 invert" />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{(settings.site_name || 'NexaMart').charAt(0)}</span>
+                </div>
+              )}
+              <span className="text-xl font-bold">{settings.site_name || 'NexaMart'}</span>
             </div>
             <p className="text-navy-300 text-sm leading-relaxed">
-              Your premium destination for home gadgets, kitchen accessories, and smart lifestyle products.
+              {settings.site_description || 'Your premium destination for home gadgets, kitchen accessories, and smart lifestyle products.'}
             </p>
             <div className="flex gap-3 mt-6">
-              <a href="#" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
-                <Facebook size={16} />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
-                <Instagram size={16} />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
-                <Twitter size={16} />
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
-                <Youtube size={16} />
-              </a>
+              {settings.social_facebook && (
+                <a href={settings.social_facebook} target="_blank" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                  <Facebook size={16} />
+                </a>
+              )}
+              {settings.social_instagram && (
+                <a href={settings.social_instagram} target="_blank" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                  <Instagram size={16} />
+                </a>
+              )}
+              {settings.social_twitter && (
+                <a href={settings.social_twitter} target="_blank" className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                  <Twitter size={16} />
+                </a>
+              )}
             </div>
           </div>
 
@@ -86,19 +100,19 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-navy-300 text-sm">
                 <MapPin size={16} className="mt-0.5 flex-shrink-0" />
-                Cairo, Egypt
+                {settings.address || 'Cairo, Egypt'}
               </li>
               <li className="flex items-center gap-3 text-navy-300 text-sm">
                 <Phone size={16} className="flex-shrink-0" />
-                +20 100 000 0000
+                {settings.contact_phone || '+20 100 000 0000'}
               </li>
               <li className="flex items-center gap-3 text-navy-300 text-sm">
                 <Mail size={16} className="flex-shrink-0" />
-                hello@nexamart.com
+                {settings.contact_email || 'hello@nexamart.com'}
               </li>
               <li className="flex items-center gap-3 text-navy-300 text-sm">
                 <Package size={16} className="flex-shrink-0" />
-                Delivery: 2-5 Business Days
+                {settings.delivery_info || 'Delivery: 2-5 Business Days'}
               </li>
             </ul>
           </div>

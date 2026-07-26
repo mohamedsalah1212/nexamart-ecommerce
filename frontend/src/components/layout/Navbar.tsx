@@ -10,6 +10,7 @@ import {
 import { cn, apiFetch } from '@/lib/utils';
 import { useCartStore } from '@/store/cart';
 import { useWishlistStore } from '@/store/wishlist';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface Category {
   id: string;
@@ -31,6 +32,7 @@ export function Navbar() {
   const wishlistItems = useWishlistStore((s) => s.items);
   const searchRef = useRef<HTMLDivElement>(null);
   const megaMenuTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const { settings } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -54,6 +56,8 @@ export function Navbar() {
     setIsMobileOpen(false);
   }, [pathname]);
 
+  if (pathname.startsWith('/admin')) return null;
+
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
@@ -65,8 +69,8 @@ export function Navbar() {
       <div className="hidden lg:block bg-navy-900 text-white text-xs">
         <div className="container-custom flex items-center justify-between h-9">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1"><Phone size={12} /> +20 100 000 0000</span>
-            <span className="flex items-center gap-1"><MapPin size={12} /> Cairo, Egypt</span>
+            <span className="flex items-center gap-1"><Phone size={12} /> {settings.contact_phone || '+20 100 000 0000'}</span>
+            <span className="flex items-center gap-1"><MapPin size={12} /> {settings.address || 'Cairo, Egypt'}</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/track-order" className="hover:text-primary-200 transition-colors flex items-center gap-1">
@@ -91,10 +95,14 @@ export function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <span className="text-xl font-bold text-navy-900 hidden sm:block">NexaMart</span>
+              {settings.site_logo ? (
+                <img src={settings.site_logo} alt={settings.site_name || 'NexaMart'} className="h-8 object-contain" />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{(settings.site_name || 'NexaMart').charAt(0)}</span>
+                </div>
+              )}
+              <span className="text-xl font-bold text-navy-900 hidden sm:block">{settings.site_name || 'NexaMart'}</span>
             </Link>
 
             {/* Desktop nav */}

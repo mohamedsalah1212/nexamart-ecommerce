@@ -66,6 +66,78 @@ export default function AdminSettingsPage() {
 
       <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-6">
         <div>
+          <h2 className="font-semibold text-gray-900 mb-4">Branding</h2>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Store Logo URL</label>
+              <div className="flex gap-3">
+                <input 
+                  value={settings.site_logo || ''} 
+                  onChange={(e) => updateSetting('site_logo', e.target.value)} 
+                  placeholder="https://..."
+                  className="input-field flex-1" 
+                />
+                <label className="btn-secondary cursor-pointer">
+                  Upload
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      try {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/upload`, {
+                          method: 'POST',
+                          body: formData
+                        });
+                        const data = await res.json();
+                        if (data.url) updateSetting('site_logo', data.url);
+                      } catch (err) {
+                        alert('Upload failed');
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {settings.site_logo && (
+                <div className="mt-3 p-4 border border-gray-100 rounded-lg bg-gray-50 inline-block">
+                  <img src={settings.site_logo} alt="Logo Preview" className="h-10 object-contain" />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Store Theme Color</label>
+              <div className="flex flex-wrap gap-3">
+                {['blue', 'emerald', 'rose', 'violet', 'amber', 'gray'].map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => updateSetting('site_theme', color)}
+                    className={\`w-12 h-12 rounded-full border-4 transition-all \${
+                      settings.site_theme === color ? 'border-gray-900 scale-110 shadow-md' : 'border-transparent hover:scale-105'
+                    }\`}
+                    style={{ 
+                      backgroundColor: 
+                        color === 'blue' ? '#3b82f6' : 
+                        color === 'emerald' ? '#10b981' : 
+                        color === 'rose' ? '#f43f5e' : 
+                        color === 'violet' ? '#8b5cf6' : 
+                        color === 'amber' ? '#f59e0b' : '#6b7280'
+                    }}
+                    title={color.charAt(0).toUpperCase() + color.slice(1)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <div>
           <h2 className="font-semibold text-gray-900 mb-4">General</h2>
           <div className="space-y-4">
             <div>
