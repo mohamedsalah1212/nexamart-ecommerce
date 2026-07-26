@@ -32,13 +32,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
     if (!token) {
-      if (pathname !== '/admin/login') router.push('/admin/login');
-      setIsLoading(false);
+      if (pathname !== '/admin/login') {
+        router.push('/404');
+      } else {
+        setIsLoading(false);
+      }
       return;
     }
     apiFetch('/auth/me')
       .then((data) => { setAdmin(data); setIsAuthenticated(true); })
-      .catch(() => { localStorage.removeItem('admin_token'); router.push('/admin/login'); })
+      .catch(() => { 
+        localStorage.removeItem('admin_token');
+        if (pathname !== '/admin/login') {
+          router.push('/404');
+        } else {
+          setIsLoading(false);
+        }
+      })
       .finally(() => setIsLoading(false));
   }, [pathname]);
 
