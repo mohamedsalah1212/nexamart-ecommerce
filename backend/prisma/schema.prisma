@@ -135,7 +135,7 @@ model OrderItem {
   orderId       String
   order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId     String
-  product       Product @relation(fields: [productId], references: [id])
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   name          String
   price         Float
   quantity      Int
@@ -168,7 +168,7 @@ model CartItem {
   id            String   @id @default(uuid())
   sessionId     String
   productId     String
-  product       Product  @relation(fields: [productId], references: [id])
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity      Int      @default(1)
   selectedColor String?
   selectedSize  String?
